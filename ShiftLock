@@ -1,0 +1,66 @@
+-- Instances:
+local ShiftlockStarterGui = Instance.new("ScreenGui")
+local ImageButton = Instance.new("ImageButton")
+-- Properties:
+ShiftlockStarterGui.Name = "ShiftlockStarterGui"
+ShiftlockStarterGui.DisplayOrder = 1000
+ShiftlockStarterGui.ResetOnSpawn = false
+ShiftlockStarterGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ShiftlockStarterGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ImageButton.Name = "ShiftLockButton"
+ImageButton.BackgroundTransparency = 1
+ImageButton.AnchorPoint = Vector2.new(1, 0.5)
+ImageButton.Position = UDim2.new(1, -10, 0.5, 0)
+ImageButton.Size = UDim2.new(0, 36, 0, 36)
+ImageButton.Image = "rbxassetid://6996350026" -- Replace with your own shift lock icon image ID
+-- Code:
+local ShiftLockController = require(script.ShiftLockController)
+local function EnableShiftLock()
+	ShiftLockController:SetShiftLockEnabled(true)end
+local function DisableShiftLock()
+	ShiftLockController:SetShiftLockEnabled(false)
+end
+local function ToggleShiftLock()
+	if ShiftLockController:IsShiftLockEnabled() then
+		DisableShiftLock()
+	else
+		EnableShiftLock()
+	end
+end
+ImageButton.MouseButton1Click:Connect(ToggleShiftLock)
+-- Key binding:
+local UserInputService = game:GetService("UserInputService")
+local shiftLockActionName = "ToggleShiftLock"
+local shiftLockAction = Enum.KeyCode.LeftShift
+local isShiftKeyPressed = false
+local function OnInputBegan(input, isProcessed)
+	if isProcessed then
+		return
+	end
+	
+	if input.KeyCode == shiftLockAction then
+		isShiftKeyPressed = true
+		ToggleShiftLock()
+	end
+end
+local function OnInputEnded(input, isProcessed)
+	if isProcessed then
+		return
+	end
+	
+	if input.KeyCode == shiftLockAction then
+		isShiftKeyPressed = false
+		if not UserInputService:IsKeyDown(shiftLockAction) then
+			DisableShiftLock()
+		end
+	end
+end
+UserInputService.InputBegan:Connect(OnInputBegan)
+UserInputService.InputEnded:Connect(OnInputEnded)
+-- Update shift lock button visibility based on device:
+local function UpdateButtonVisibility()
+	local isTouchDevice = UserInputService.TouchEnabled
+	ImageButton.Visible = not isTouchDevice
+end
+UpdateButtonVisibility()
+UserInputService.TouchEnabledChanged:Connect(UpdateButtonVisibility)
